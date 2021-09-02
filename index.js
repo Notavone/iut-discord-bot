@@ -35,7 +35,7 @@ client.on("ready", async () => {
             .on("collect", async (interaction) => {
                 let mem = interaction.member;
 
-                if (mem.roles.cache.has(anciens)) {
+                if (mem.roles.cache.has(anciens.id)) {
                     return interaction.reply({content: "Tu peux pas t'es un ancien enculé", ephemeral: true});
                 } else {
                     await mem.roles.remove(rolesDeClasse);
