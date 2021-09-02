@@ -50,7 +50,7 @@ client.on("ready", async () => {
 
     await guild.commands.set([require("./edt.js").slash]);
     await createCollectorForRolesStartingWith("1ère année", "S1-", role1);
-    await createCollectorForRolesStartingWith("2ère année", "S3-", role2);
+    await createCollectorForRolesStartingWith("2ème année", "S3-", role2);
 });
 
 client.on("interactionCreate", async (interaction) => {
