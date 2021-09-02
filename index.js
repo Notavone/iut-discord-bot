@@ -42,7 +42,7 @@ client.on("ready", async () => {
                     await mem.roles.remove([role1, role2]);
                     await mem.roles.add(roleAnnee);
                     await mem.roles.add(roles.get(interaction.customId));
-                    await interaction.reply({content: "Bien joué pd", ephemeral: true});
+                    await interaction.reply({content: "C'est fait ma gueule", ephemeral: true});
                 }
             });
 
@@ -57,7 +57,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === "edt") {
-        let cmd = require("./edt.js")(client, interaction);
+        require("./edt.js")(client, interaction);
     }
 });
 
