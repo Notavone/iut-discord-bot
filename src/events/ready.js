@@ -1,11 +1,8 @@
-require("dotenv").config();
-const Discord = require("discord.js");
+const {splitArray} = require("../utils");
+const {MessageEmbed} = require("discord.js");
 const {MessageButton} = require("discord.js");
 const {MessageActionRow} = require("discord.js");
-const client = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MEMBERS]});
-
-
-client.on("ready", async () => {
+module.exports = async (client) => {
     let guild = client.guilds.cache.get("355396372809121792");
     let role1 = guild.roles.cache.get("486169138671386646");
     let role2 = guild.roles.cache.get("487185971805421579");
@@ -15,7 +12,7 @@ client.on("ready", async () => {
 
     async function createCollectorForRolesStartingWith(embedText, roleDisciminator, roleAnnee) {
         let msg = (await salonAutoRole.messages.fetch()).find((m => m.embeds[0].description === embedText));
-        let embed = new Discord.MessageEmbed()
+        let embed = new MessageEmbed()
             .setDescription(embedText);
         let roles = guild.roles.cache.filter(r => r.name.startsWith(roleDisciminator));
 
@@ -36,7 +33,7 @@ client.on("ready", async () => {
                 let mem = interaction.member;
 
                 if (mem.roles.cache.has(anciens.id)) {
-                    return interaction.reply({content: "Tu peux pas t'es un ancien enculé", ephemeral: true});
+                    return interaction.reply({content: "Tu peux pas t'es un ancien, enculé", ephemeral: true});
                 } else {
                     await mem.roles.remove(rolesDeClasse);
                     await mem.roles.remove([role1, role2]);
@@ -45,29 +42,45 @@ client.on("ready", async () => {
                     await interaction.reply({content: "C'est fait ma gueule", ephemeral: true});
                 }
             });
-
     }
 
-    await guild.commands.set([require("./edt.js").slash]);
+    async function autoRoles(embedText, roles) {
+        let msg = (await salonAutoRole.messages.fetch()).find((m => m.embeds[0].description === embedText));
+        let embed = new MessageEmbed()
+            .setDescription(embedText);
+
+        let boutons = splitArray(roles, 5).map(ar => {
+            return new MessageActionRow().addComponents(
+                ar.map(r => {
+                    return new MessageButton()
+                        .setCustomId(r.id)
+                        .setLabel(r.name)
+                        .setStyle("PRIMARY");
+                }));
+        });
+
+        if (!msg) msg = await salonAutoRole.send({embeds: [embed], components: boutons});
+
+        msg.createMessageComponentCollector({filter: () => true, dispose: true})
+            .on("collect", async (interaction) => {
+                let mem = interaction.member;
+                if (mem.roles.cache.has(interaction.customId)) {
+                    await mem.roles.remove(interaction.customId);
+                    return interaction.reply({content: "Bye bye le role!", ephemeral: true});
+                } else {
+                    await mem.roles.add(interaction.customId);
+                    await interaction.reply({content: "C fé!", ephemeral: true});
+                }
+            });
+    }
+
+    let newsABII = guild.roles.cache.get("822162045641162771");
+    let bogareurs = guild.roles.cache.get("884034441121517568");
+
     await createCollectorForRolesStartingWith("1ère année", "S1-", role1);
     await createCollectorForRolesStartingWith("2ème année", "S3-", role2);
-});
+    await autoRoles("Les roles spéciaux", [newsABII, bogareurs]);
 
-client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isCommand()) return;
-
-    if (interaction.commandName === "edt") {
-        require("./edt.js")(client, interaction);
-    }
-});
-
-function splitArray(array, limit) {
-    let newArray = [];
-    array.sort();
-    while (array.length > 0) {
-        newArray.push(array.splice(0, limit));
-    }
-    return newArray;
+    // client.emit("guildMemberAdd", guild.me);
+    // client.emit("guildMemberRemove", guild.me);
 }
-
-client.login(process.env.TOKEN).then(() => console.log(""));
