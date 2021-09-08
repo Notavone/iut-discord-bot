@@ -58,24 +58,26 @@ module.exports = (client, interaction) => {
     ];
     const group = groups.find((grp) => grp.getName() === groupName);
 
-    if (!group) return interaction.reply({ephemeral: true, content: "T'as fait de la merde ou j'ai fait de la merde mais dans tout les cas ça marche pas"});
+    if (!group) return interaction.editReply({ephemeral: true, content: "T'as fait de la merde ou j'ai fait de la merde mais dans tout les cas ça marche pas"});
     group.displayEDT(interaction, week);
 };
 
-module.exports.slash = new SlashCommandBuilder()
-    .setName("edt")
-    .setDescription("Donne l'emploi du temps (mdr)")
-    .addStringOption(o => o
-        .setName("groupe")
-        .setDescription("Un groupe ou un groupe étendu (S1/S1-A/S1-A2)")
-        .setRequired(true)
-    )
-    .addNumberOption(o => o
-        .setName("decalage")
-        .setDescription("Le nombre de semaine de décalage (defaut 1)")
-        .addChoice("-1", -1)
-        .addChoice("1", 1)
-        .addChoice("2", 2));
+module.exports.slash = {
+    data: new SlashCommandBuilder()
+        .setName("edt")
+        .setDescription("Donne l'emploi du temps (mdr)")
+        .addStringOption(o => o
+            .setName("groupe")
+            .setDescription("Un groupe ou un groupe étendu (S1/S1-A/S1-A2)")
+            .setRequired(true)
+        )
+        .addNumberOption(o => o
+            .setName("decalage")
+            .setDescription("Le nombre de semaine de décalage (defaut 1)")
+            .addChoice("-1", -1)
+            .addChoice("1", 1)
+            .addChoice("2", 2))
+};
 
 class Group {
     /**
@@ -98,11 +100,12 @@ class Group {
             const url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
                 .replace(/&width=[0-9]*&height=[0-9]*&/, '&width=1080&height=720&')
                 .replace('&idPianoDay=0%2C1%2C2%2C3%2C4%2C5', '&idPianoDay=0%2C1%2C2%2C3%2C4');
+            console.log(url);
             const embed = new MessageEmbed()
                 .setTitle(`Emploi du temps du groupe ${this.name.toUpperCase()}`)
                 .setDescription(`${week === 1 ? 'semaine actuelle' : `+${week - 1} semaine(s)`}`)
                 .setImage(url);
-            await interaction.reply({embeds: [embed]});
+            await interaction.editReply({embeds: [embed]});
         });
     }
 }

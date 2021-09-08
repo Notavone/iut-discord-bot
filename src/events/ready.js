@@ -1,3 +1,5 @@
+const path = require("path");
+const {getFiles} = require("../utils");
 const {splitArray} = require("../utils");
 const {MessageEmbed} = require("discord.js");
 const {MessageButton} = require("discord.js");
@@ -81,6 +83,18 @@ module.exports = async (client) => {
     await createCollectorForRolesStartingWith("2ème année", "S3-", role2);
     await autoRoles("Les roles spéciaux", [newsABII, bogareurs]);
 
-    // client.emit("guildMemberAdd", guild.me);
-    // client.emit("guildMemberRemove", guild.me);
+    let commandFiles = getFiles(path.join(__dirname, "../commands"));
+    for (const commandFile of commandFiles) {
+        let command = require(commandFile);
+        await client.commands.set(command.slash.data.name, command);
+    }
+
+    for (const guild of [...client.guilds.cache.values()]) {
+        await guild.commands.set(client.commands.map(cmd => cmd.slash.data));
+    }
+
+    let shib = guild.channels.cache.get("885094846258348035");
+    setInterval(async () => {
+        await shib.send({content: "<:shib:883031467364597821>"});
+    }, 1000 * 3600);
 }
