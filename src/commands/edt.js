@@ -1,9 +1,10 @@
 const {SlashCommandBuilder} = require("@discordjs/builders");
-const {MessageAttachment} = require("discord.js");
-const puppeteer = require("puppeteer");
+const {MessageEmbed} = require("discord.js");
+const request = require("request");
 
 module.exports = (client, interaction) => {
     let name = interaction.options.get("groupe")?.value;
+    let week = interaction.options.get("decalage")?.value || 1;
 
     const groups = [
         new Group('s1', 4641),
@@ -57,20 +58,26 @@ module.exports = (client, interaction) => {
         new Group('s4-c2', 19973)
     ];
     const group = groups.find((grp) => grp.name === name);
-    if(!group) return interaction.editReply({context: "Nope"});
-    group.displayEDT(interaction);
+    if(!group) return interaction.editReply({content: "Nope"});
+    group.displayEDT(interaction, week);
 };
 
 module.exports.slash = {
     ephemeral: false,
     data: new SlashCommandBuilder()
         .setName("edt")
-        .setDescription("Donne l'emploi du temps (mdr)")
+        .setDescription("Donne l'EDT")
         .addStringOption(o => o
             .setName("groupe")
             .setDescription("Un groupe ou un groupe étendu (S1/S1-A/S1-A2)")
             .setRequired(true)
         )
+        .addNumberOption(o => o
+            .setName("decalage")
+            .setDescription("Le nombre de semaine de décalage (defaut 1)")
+            .addChoice("-1", -1)
+            .addChoice("1", 1)
+            .addChoice("2", 2))
 };
 
 class Group {
@@ -79,23 +86,19 @@ class Group {
         this.id = id;
     }
 
-    displayEDT(interaction) {
-        (async () => {
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-            await page.setViewport({
-                width: 1280,
-                height: 800
-            });
-            await page.goto(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=1`);
-            let buffer = await page.screenshot({
-                path: 'edt.png',
-                fullPage: true
-            });
-            if(!Buffer.isBuffer(buffer)) return interaction.editReply({content: "ça marche pas mon pote"});
-            let attachment = new MessageAttachment(buffer, "edt.png");
-            await interaction.editReply({files: [attachment]});
-            await browser.close();
-        })();
+    displayEDT(interaction, week) {
+        request(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=${(7 * week).toString()}`, async (err, res, body) => {
+            if (err) throw err;
+            const url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
+                .replace("vesta", "sedna")
+                .replace(":8443", "")
+                .replace(/&width=[0-9]*&height=[0-9]*&/, '&width=1080&height=720&')
+                .replace('&idPianoDay=0%2C1%2C2%2C3%2C4%2C5', '&idPianoDay=0%2C1%2C2%2C3%2C4');
+            const embed = new MessageEmbed()
+                .setTitle(`Emploi du temps du groupe ${this.name.toUpperCase()}`)
+                .setDescription(`${week === 1 ? 'semaine actuelle' : `+${week - 1} semaine(s)`}`)
+                .setImage(url);
+            await interaction.editReply({embeds: [embed]});
+        });
     }
 }
