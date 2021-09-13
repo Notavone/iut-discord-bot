@@ -57,6 +57,7 @@ module.exports = (client, interaction) => {
         new Group('s4-c2', 19973)
     ];
     const group = groups.find((grp) => grp.name === name);
+    if(!group) return interaction.editReply({context: "Nope"});
     group.displayEDT(interaction);
 };
 
@@ -91,9 +92,8 @@ class Group {
                 path: 'edt.png',
                 fullPage: true
             });
-            if(!Buffer.isBuffer(buffer)) return interaction.editReply("ça marche pas mon pote");
+            if(!Buffer.isBuffer(buffer)) return interaction.editReply({content: "ça marche pas mon pote"});
             let attachment = new MessageAttachment(buffer, "edt.png");
-            console.log(attachment);
             await interaction.editReply({files: [attachment]});
             await browser.close();
         })();
