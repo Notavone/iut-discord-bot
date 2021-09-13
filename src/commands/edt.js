@@ -1,10 +1,10 @@
-const request = require("request");
 const {SlashCommandBuilder} = require("@discordjs/builders");
-const {MessageEmbed} = require("discord.js");
+const {MessageAttachment} = require("discord.js");
+const puppeteer = require("puppeteer");
 
 module.exports = (client, interaction) => {
-    let groupName = interaction.options.get("groupe").value;
-    let week = interaction.options.get("decalage")?.value || 1;
+    let name = interaction.options.get("groupe")?.value;
+
     const groups = [
         new Group('s1', 4641),
         new Group('s1-a', 4670),
@@ -56,13 +56,12 @@ module.exports = (client, interaction) => {
         new Group('s4-c1', 16238),
         new Group('s4-c2', 19973)
     ];
-    const group = groups.find((grp) => grp.getName() === groupName);
-
-    if (!group) return interaction.editReply({ephemeral: true, content: "T'as fait de la merde ou j'ai fait de la merde mais dans tout les cas ça marche pas"});
-    group.displayEDT(interaction, week);
+    const group = groups.find((grp) => grp.name === name);
+    group.displayEDT(interaction);
 };
 
 module.exports.slash = {
+    ephemeral: false,
     data: new SlashCommandBuilder()
         .setName("edt")
         .setDescription("Donne l'emploi du temps (mdr)")
@@ -71,41 +70,32 @@ module.exports.slash = {
             .setDescription("Un groupe ou un groupe étendu (S1/S1-A/S1-A2)")
             .setRequired(true)
         )
-        .addNumberOption(o => o
-            .setName("decalage")
-            .setDescription("Le nombre de semaine de décalage (defaut 1)")
-            .addChoice("-1", -1)
-            .addChoice("1", 1)
-            .addChoice("2", 2))
 };
 
 class Group {
-    /**
-     *
-     * @param {String} groupName
-     * @param {Number} groupID
-     */
-    constructor(groupName, groupID) {
-        this.name = groupName;
-        this.id = groupID;
+    constructor(name, id) {
+        this.name = name;
+        this.id = id;
     }
 
-    getName() {
-        return this.name;
-    }
-
-    displayEDT(interaction, week) {
-        request(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=${(7 * week).toString()}`, async (err, res, body) => {
-            if (err) throw err;
-            const url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
-                .replace(/&width=[0-9]*&height=[0-9]*&/, '&width=1080&height=720&')
-                .replace('&idPianoDay=0%2C1%2C2%2C3%2C4%2C5', '&idPianoDay=0%2C1%2C2%2C3%2C4');
-            console.log(url);
-            const embed = new MessageEmbed()
-                .setTitle(`Emploi du temps du groupe ${this.name.toUpperCase()}`)
-                .setDescription(`${week === 1 ? 'semaine actuelle' : `+${week - 1} semaine(s)`}`)
-                .setImage(url);
-            await interaction.editReply({embeds: [embed]});
-        });
+    displayEDT(interaction) {
+        (async () => {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            await page.setViewport({
+                width: 1280,
+                height: 800
+            });
+            await page.goto(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=1`);
+            let buffer = await page.screenshot({
+                path: 'edt.png',
+                fullPage: true
+            });
+            if(!Buffer.isBuffer(buffer)) return interaction.editReply("ça marche pas mon pote");
+            let attachment = new MessageAttachment(buffer, "edt.png");
+            console.log(attachment);
+            await interaction.editReply({files: [attachment]});
+            await browser.close();
+        })();
     }
 }

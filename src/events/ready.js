@@ -5,6 +5,8 @@ const {MessageEmbed} = require("discord.js");
 const {MessageButton} = require("discord.js");
 const {MessageActionRow} = require("discord.js");
 module.exports = async (client) => {
+    console.log("Salut ma gueule");
+
     let guild = client.guilds.cache.get("355396372809121792");
     let role1 = guild.roles.cache.get("486169138671386646");
     let role2 = guild.roles.cache.get("487185971805421579");
