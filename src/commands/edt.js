@@ -57,8 +57,8 @@ module.exports = (client, interaction) => {
         new Group('s4-c1', 16238),
         new Group('s4-c2', 19973)
     ];
-    const group = groups.find((grp) => grp.name === name);
-    if(!group) return interaction.editReply({content: "Nope"});
+    const group = groups.find((grp) => grp.name.replace("-", "").toLowerCase() === name.replace("-", "").toLowerCase());
+    if (!group) return interaction.editReply({content: "J'ai pas reconnu le groupe désolé"});
     group.displayEDT(interaction, week);
 };
 
