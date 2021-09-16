@@ -5,6 +5,7 @@ const request = require("request");
 module.exports = (client, interaction) => {
     let name = interaction.options.get("groupe")?.value;
     let week = interaction.options.get("decalage")?.value || 1;
+    let samedi = interaction.options.get("samedi")?.value;
 
     const groups = [
         new Group('S1', 4641),
@@ -56,12 +57,12 @@ module.exports = (client, interaction) => {
         new Group('S4-C', 16236),
         new Group('S4-C1', 16238),
         new Group('S4-C2', 19973),
-        new Group("Teprow_I", 14494),
-        new Group("Teprow_A", 14502)
+        new Group("Teprow_I", 14494, true),
+        new Group("Teprow_A", 14502, true)
     ];
     const group = groups.find((grp) => grp.name.replace("-", "").toLowerCase() === name.replace("-", "").toLowerCase());
     if (!group) return interaction.editReply({content: "J'ai pas reconnu le groupe désolé"});
-    group.displayEDT(interaction, week);
+    group.displayEDT(interaction, week, samedi);
 };
 
 module.exports.slash = {
@@ -78,27 +79,36 @@ module.exports.slash = {
             .setName("decalage")
             .setDescription("Le nombre de semaine de décalage (defaut 1)")
             .addChoice("-1", -1)
-            .addChoice("1", 1)
-            .addChoice("2", 2))
+            .addChoice("+1", 2)
+            .addChoice("+2", 3))
+        .addBooleanOption(o => o
+            .setName("samedi")
+            .setDescription("Affiche le samedi")
+        )
 };
 
 class Group {
-    constructor(name, id) {
+    constructor(name, id, samedi) {
         this.name = name;
         this.id = id;
+        this.samedi = !!samedi;
     }
 
-    displayEDT(interaction, week) {
+    displayEDT(interaction, week, displaySamedi) {
         request(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=${(7 * week).toString()}`, async (err, res, body) => {
             if (err) throw err;
-            const url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
+            let url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
                 .replace("vesta", "sedna")
                 .replace(":8443", "")
                 .replace(/&width=[0-9]*&height=[0-9]*&/, '&width=960&height=540&');
-                // .replace('&idPianoDay=0%2C1%2C2%2C3%2C4%2C5', '&idPianoDay=0%2C1%2C2%2C3%2C4');
+            if (displaySamedi === undefined) displaySamedi = this.samedi;
+            if (!displaySamedi) {
+                url = url.replace('&idPianoDay=0%2C1%2C2%2C3%2C4%2C5', '&idPianoDay=0%2C1%2C2%2C3%2C4');
+            }
+
             const embed = new MessageEmbed()
                 .setTitle(`Emploi du temps du groupe ${this.name}`)
-                .setDescription(`${week === 1 ? 'semaine actuelle' : `+${week - 1} semaine(s)`}`)
+                .setDescription(`${week === 1 ? 'Cette semaine' : `${week > 0 ? "+" + (week - 1) : "-" + week} semaine(s)`}`)
                 .setImage(url);
             await interaction.editReply({embeds: [embed]});
         });

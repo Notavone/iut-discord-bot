@@ -56,6 +56,6 @@ function getFiles(directory, aFiles) {
         } else {
             aFiles.push(path);
         }
-    })
+    });
     return aFiles;
 }
