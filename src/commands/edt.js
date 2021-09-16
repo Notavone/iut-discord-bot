@@ -100,7 +100,8 @@ class Group {
             let url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
                 .replace("vesta", "sedna")
                 .replace(":8443", "")
-                .replace(/&width=[0-9]*&height=[0-9]*&/, '&width=960&height=540&');
+                .replace(/&width=[0-9]*&height=[0-9]*&/, '&width=960&height=540&')
+                .replace("displayConfId=35", "displayConfId=45");
             if (displaySamedi === undefined) displaySamedi = this.samedi;
             if (!displaySamedi) {
                 url = url.replace('&idPianoDay=0%2C1%2C2%2C3%2C4%2C5', '&idPianoDay=0%2C1%2C2%2C3%2C4');
