@@ -19,6 +19,8 @@ module.exports = async (client) => {
         let embed = new MessageEmbed()
             .setDescription(embedText);
         let roles = guild.roles.cache.filter(r => r.name.startsWith(roleDisciminator));
+        let orderedNames = roles.map(r => r.name).sort();
+        roles = orderedNames.map(name => roles.find(r => r.name === name));
 
         let boutons = splitArray([...roles.values()], 5).map(ar => {
             return new MessageActionRow().addComponents(
