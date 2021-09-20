@@ -44,7 +44,7 @@ module.exports = async (client) => {
                     await mem.roles.remove(rolesDeClasse);
                     await mem.roles.remove([role1, role2]);
                     await mem.roles.add(roleAnnee);
-                    await mem.roles.add(roles.get(interaction.customId));
+                    await mem.roles.add(interaction.customId);
                     await interaction.reply({content: "C'est fait ma gueule", ephemeral: true});
                 }
             });

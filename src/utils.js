@@ -3,7 +3,6 @@ const fs = require("fs");
 
 module.exports.splitArray = (array, limit) => {
     let newArray = [];
-    array.sort();
     while (array.length > 0) {
         newArray.push(array.splice(0, limit));
     }
