@@ -2,7 +2,7 @@ require("dotenv").config();
 const Discord = require("discord.js");
 const path = require("path");
 const {getFiles} = require("./utils");
-const client = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MEMBERS]});
+const client = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MEMBERS, Discord.Intents.FLAGS.GUILD_PRESENCES]});
 
 client.commands = new Discord.Collection();
 
