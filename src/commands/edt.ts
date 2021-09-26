@@ -1,11 +1,12 @@
-const {SlashCommandBuilder} = require("@discordjs/builders");
-const {MessageEmbed} = require("discord.js");
-const request = require("request");
+import {CustomClient} from "../utils";
+import {CommandInteraction, MessageEmbed} from "discord.js";
+import {SlashCommandBuilder} from "@discordjs/builders";
+import request from "request";
 
-module.exports = (client, interaction) => {
-    let name = interaction.options.get("groupe")?.value;
-    let week = interaction.options.get("decalage")?.value || 1;
-    let samedi = interaction.options.get("samedi")?.value;
+export async function execute(client: CustomClient, interaction: CommandInteraction) {
+    let name = <string>interaction.options.get("groupe")?.value ?? "";
+    let week = <number>interaction.options.get("decalage")?.value ?? 1;
+    let samedi = <boolean>interaction.options.get("samedi")?.value ?? false;
 
     const groups = [
         new Group('S1', 4641),
@@ -60,42 +61,46 @@ module.exports = (client, interaction) => {
         new Group("Teprow_I", 14494, true),
         new Group("Teprow_A", 14502, true)
     ];
-    const group = groups.find((grp) => grp.name.replace("-", "").toLowerCase() === name.replace("-", "").toLowerCase());
+    const group = groups.find((grp) => grp.name.replace("-", "").toLowerCase() === name!.replace("-", "").toLowerCase());
     if (!group) return interaction.editReply({content: "J'ai pas reconnu le groupe désolé"});
     group.displayEDT(interaction, week, samedi);
-};
+}
 
-module.exports.slash = {
+export const slash = {
     ephemeral: false,
     data: new SlashCommandBuilder()
         .setName("edt")
         .setDescription("Donne l'EDT")
-        .addStringOption(o => o
+        .addStringOption((o: any) => o
             .setName("groupe")
             .setDescription("Un groupe ou un groupe étendu (S1/S1-A/S1-A2)")
             .setRequired(true)
         )
-        .addNumberOption(o => o
+        .addNumberOption((o: any) => o
             .setName("decalage")
             .setDescription("Le nombre de semaine de décalage (defaut 1)")
             .addChoice("-1", -1)
             .addChoice("+1", 2)
             .addChoice("+2", 3))
-        .addBooleanOption(o => o
+        .addBooleanOption((o: any) => o
             .setName("samedi")
             .setDescription("Affiche le samedi")
         )
 };
 
 class Group {
-    constructor(name, id, samedi) {
+    public name: string;
+    public id: number;
+    public samedi: boolean;
+
+    constructor(name: string, id: number, samedi?: boolean) {
         this.name = name;
         this.id = id;
         this.samedi = !!samedi;
     }
 
-    displayEDT(interaction, week, displaySamedi) {
-        request(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=${(7 * week).toString()}`, async (err, res, body) => {
+    displayEDT(interaction: CommandInteraction, week: number, displaySamedi?: boolean) {
+        request(`https://sedna.univ-fcomte.fr/jsp/custom/ufc/mplanif.jsp?id=${this.id}&jours=${(7 * week).toString()}`, async (err: Error, res: any, body: any) => {
             if (err) throw err;
             let url = body.match(/<a href="(.*)">Affichage planning<\/a>/)[1]
                 .replace("vesta", "sedna")

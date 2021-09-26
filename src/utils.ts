@@ -1,15 +1,16 @@
-const Canvas = require("canvas");
-const fs = require("fs");
+import {ApplicationCommandData, Client, ClientOptions, Collection, GuildMember, Interaction, Permissions} from "discord.js";
+import * as Canvas from "canvas";
+import * as fs from "fs";
 
-module.exports.splitArray = (array, limit) => {
+export function splitArray(array: any[], limit: number) {
     let newArray = [];
     while (array.length > 0) {
         newArray.push(array.splice(0, limit));
     }
     return newArray;
-};
+}
 
-module.exports.memberCanvas = async (member) => {
+export async function memberCanvas(member: GuildMember) {
     let canvas = Canvas.createCanvas(700, 250);
     let context = canvas.getContext('2d');
 
@@ -41,20 +42,35 @@ module.exports.memberCanvas = async (member) => {
     context.fillText(member.user.username, canvas.width / 2.5, canvas.height / 1.8);
 
     return canvas;
-};
+}
 
-module.exports.getFiles = getFiles;
-
-function getFiles(directory, aFiles) {
+export function getFiles(directory: string, aFiles?: string[]) {
     const files = fs.readdirSync(directory);
-    aFiles = aFiles ?? [];
-    files.forEach((file) => {
+    files.forEach((file: string) => {
         const path = `${directory}/${file}`;
         if (fs.statSync(path).isDirectory()) {
             aFiles = getFiles(path, aFiles);
         } else {
+            if (!aFiles) aFiles = [];
             aFiles.push(path);
         }
     });
     return aFiles;
+}
+
+export class CustomClient extends Client {
+    commands: Collection<string, Command>;
+    constructor(options: ClientOptions) {
+        super(options);
+        this.commands = new Collection();
+    }
+}
+
+export interface Command {
+    execute: (client:CustomClient, interaction:Interaction) => any,
+    slash: {
+        permissionFlags?: Permissions[],
+        ephemeral?: boolean,
+        data: ApplicationCommandData
+    }
 }

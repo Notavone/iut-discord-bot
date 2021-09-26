@@ -1,4 +1,7 @@
-const {SlashCommandBuilder} = require("@discordjs/builders");
+import {CustomClient} from "../utils";
+import {CommandInteraction} from "discord.js";
+import {SlashCommandBuilder} from "@discordjs/builders";
+
 let phrases = [
     "**Monsieur.**",
     "Sortez vos résumés.",
@@ -69,14 +72,14 @@ let phrases = [
     "Tape le ! Tape ! Tape ! Tape le monsieur ! Tape **echo blabla** !"
 ];
 
-module.exports = async (client, interaction) => {
+export async function execute(client: CustomClient, interaction: CommandInteraction) {
     await interaction.editReply({
         content: phrases[Math.floor(Math.random() * phrases.length)]
     })
 }
 
-module.exports.slash = {
+export const slash = {
     data: new SlashCommandBuilder()
         .setName("fouzi")
-        .setDescription("Fouzi..")
+        .setDescription("Du grand mendez..")
 }
