@@ -71,18 +71,18 @@ export const slash = {
     data: new SlashCommandBuilder()
         .setName("edt")
         .setDescription("Donne l'EDT")
-        .addStringOption((o: any) => o
+        .addStringOption((o) => o
             .setName("groupe")
             .setDescription("Un groupe ou un groupe étendu (S1/S1-A/S1-A2)")
             .setRequired(true)
         )
-        .addNumberOption((o: any) => o
+        .addNumberOption((o) => o
             .setName("decalage")
             .setDescription("Le nombre de semaine de décalage (defaut 1)")
             .addChoice("-1", -1)
             .addChoice("+1", 2)
             .addChoice("+2", 3))
-        .addBooleanOption((o: any) => o
+        .addBooleanOption((o) => o
             .setName("samedi")
             .setDescription("Affiche le samedi")
         )

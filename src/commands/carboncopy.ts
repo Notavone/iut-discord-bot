@@ -36,7 +36,7 @@ export const slash = {
     data: new SlashCommandBuilder()
         .setName("carboncopy")
         .setDescription("Mentionne tout les membres d'un groupe")
-        .addRoleOption((o: any) => o
+        .addRoleOption((o) => o
             .setName("role")
             .setDescription("Le groupe à mentionner")
             .setRequired(true)
