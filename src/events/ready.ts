@@ -1,6 +1,7 @@
 import {CustomClient, getFiles, splitArray} from "../utils";
-import {Collection, GuildMemberRoleManager, Message, MessageActionRow, MessageButton, MessageEmbed, Role, Snowflake, TextChannel} from "discord.js";
+import {GuildMemberRoleManager, MessageActionRow, MessageButton, MessageEmbed, Role, TextChannel} from "discord.js";
 import * as path from "path";
+
 module.exports = async (client: CustomClient) => {
     console.log("Salut ma gueule");
 
@@ -84,28 +85,6 @@ module.exports = async (client: CustomClient) => {
                     }
                 }
             });
-    }
-
-    let ff = [...guild.channels.cache.filter(c => c.isText()).values()];
-    for (let i = 0; i < ff.length; i++) {
-        let c = <TextChannel>ff[i];
-        console.log(c.name)
-        let messages: Collection<Snowflake, Message>;
-        let before: string | undefined = undefined;
-        if (c.id === "355396372809121794") before = "890531464582692874";
-        do {
-            messages = await c.messages.fetch({limit: 100, before});
-            if (!messages.last()) continue;
-            before = messages.last()!.id;
-            for (let msg of [...messages.filter(m => m.author.id === "178896511378259968").values()]) {
-                console.log(msg.content);
-                msg.delete()
-                    .catch((_) => {
-                    });
-            }
-            new Promise((resolve) => setTimeout(() => resolve(1000)));
-        }
-        while (messages.size > 0);
     }
 
     let newsABII = guild.roles.cache.get("822162045641162771");
