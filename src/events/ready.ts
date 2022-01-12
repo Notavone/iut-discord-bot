@@ -91,8 +91,10 @@ module.exports = async (client: CustomClient) => {
     let bogareurs = guild.roles.cache.get("884034441121517568");
     if (!newsABII || !bogareurs) return console.log("Il manque un role spécial");
 
-    await createCollectorForRolesStartingWith("1ère année", "S1-", role1);
-    await createCollectorForRolesStartingWith("2ème année", "S3-", role2);
+    // await createCollectorForRolesStartingWith("1ère année - S1", "S1-", role1);
+    await createCollectorForRolesStartingWith("1ère année - S2", "S2-", role1);
+    // await createCollectorForRolesStartingWith("2ème année - S3", "S3", role1);
+    await createCollectorForRolesStartingWith("2ème année - S4", "S4-", role2);
     await autoRoles("Les roles spéciaux", [newsABII, bogareurs]);
 
     let commandFiles = getFiles(path.join(__dirname, "../commands")) ?? [];
